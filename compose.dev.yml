@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # Serwer backendowy (Bun + Elysia)
+  api:
+    build:
+      context: .
+      target: base # Na devie używamy pierwszego etapu, żeby mieć devDependencies
+    command: bun --watch run src/index.ts # Flagą --watch odpalamy Hot Reloading
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules # Chroni lokalne node_modules przed nadpisaniem przez kontener
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://postgres:secret_password@db:5432/velo_db
+      # Dev-only; use a unique secret per environment in production (min 32 chars).
+      - JWT_SECRET=dev-local-jwt-secret-min-32-chars-long
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Baza danych (PostgreSQL)
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret_password
+      POSTGRES_DB: velo_db
+    ports:
+      - '5432:5432'
+    volumes:
+      # Named volume is project-specific so a reused Docker volume is not
+      # initialized with another app's POSTGRES_USER (env vars apply only once).
+      - vibescript_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  vibescript_pgdata:
