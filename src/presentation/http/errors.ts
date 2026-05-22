@@ -1,5 +1,11 @@
 // src/infrastructure/http/errors.ts
 import { InvalidCredentialsError } from '@/application/auth/errors/invalid-credentials.error';
+import {
+  InvalidProjectMemberStatusError,
+  ProjectMemberAlreadyExistsError,
+} from '@/application/project-members/errors/conflict.error';
+import { ProjectMemberNotFoundError } from '@/application/project-members/errors/not-found.error';
+import { ProjectNotFoundError } from '@/application/projects/errors/not-found.error';
 import { UserAlreadyExistsError } from '@/application/user/errors/conflict.error';
 import { InvalidPasswordError } from '@/application/user/errors/invalid-password.error';
 import { UserNotFoundError } from '@/application/user/errors/not-found.error';
@@ -8,7 +14,11 @@ import { Elysia } from 'elysia';
 
 const ERROR_STATUS_MAP: Record<string, number> = {
   [UserNotFoundError.name]: 404,
+  [ProjectNotFoundError.name]: 404,
+  [ProjectMemberNotFoundError.name]: 404,
   [UserAlreadyExistsError.name]: 409,
+  [ProjectMemberAlreadyExistsError.name]: 409,
+  [InvalidProjectMemberStatusError.name]: 400,
   [InvalidPasswordError.name]: 401,
   [InvalidCredentialsError.name]: 401,
 };

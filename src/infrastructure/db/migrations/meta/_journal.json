@@ -8,6 +8,13 @@
       "when": 1779459894241,
       "tag": "0000_odd_the_watchers",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1779469304477,
+      "tag": "0001_smart_sentry",
+      "breakpoints": true
     }
   ]
 }

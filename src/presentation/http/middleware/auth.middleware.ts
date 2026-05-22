@@ -1,7 +1,7 @@
 import { cookie } from '@elysiajs/cookie';
 import { Elysia } from 'elysia';
 import type { TokenServicePort } from '@/application/auth/ports/token-service.port';
-import type { FindUserByIdUseCase } from '@/application/users/use-cases/find-user-by-id.use-case';
+import type { FindUserByIdUseCase } from '@/application/user/use-cases/find-user-by-id.use-case';
 import type { User } from '@/domain/users/entities/user';
 import { SESSION_COOKIE_NAME } from '@/presentation/http/constants/session';
 
