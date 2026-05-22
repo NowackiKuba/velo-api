@@ -2,12 +2,11 @@ import { pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 
 export const usersTable = pgTable('users', {
   id: uuid('id').primaryKey().notNull(),
-  firstName: varchar('first_name', { length: 55 }).notNull(),
-  lastName: varchar('last_name', { length: 55 }).notNull(),
+  username: varchar('username', { length: 30 }).notNull().unique(),
   email: varchar('email', { length: 255 }).notNull().unique(),
   password: varchar('password', { length: 255 }).notNull(),
-  tier: varchar('tier', { length: 25 }).$type<'FREE' | 'PREMIUM'>().notNull().default('FREE'),
-  avatarUrl: varchar('avatar_url', { length: 2048 }),
+  resetPasswordToken: varchar('reset_password_token', { length: 16 }),
+  lastResetPasswordAt: timestamp('last_reset_password_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   deletedAt: timestamp('deleted_at'),
