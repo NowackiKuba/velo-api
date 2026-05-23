@@ -36,7 +36,9 @@ export const createIngestController = (webhookQueue: WebhookQueuePort) =>
         providerEventId: extractProviderEventId(normalizedHeaders, body),
       };
 
-      await webhookQueue.enqueue(job);
+      void webhookQueue.enqueue(job).catch((error) => {
+        console.error('Failed to enqueue webhook job:', error);
+      });
 
       set.status = 202;
       return { status: 'accepted' };

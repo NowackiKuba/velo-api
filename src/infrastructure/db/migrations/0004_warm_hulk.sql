@@ -1,0 +1,1 @@
+CREATE INDEX "idx_endpoints_active_by_project" ON "endpoints" USING btree ("project_id") WHERE "endpoints"."is_active" = true and "endpoints"."deleted_at" is null;

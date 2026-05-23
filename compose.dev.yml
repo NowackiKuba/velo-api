@@ -39,6 +39,26 @@ services:
       timeout: 5s
       retries: 5
 
+  worker:
+    build:
+      context: .
+      target: base
+    command: bun --watch run src/worker.ts
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://postgres:secret_password@db:5432/velo_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - WORKER_CONCURRENCY=10
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   # Baza danych (PostgreSQL)
   db:
     image: postgres:16-alpine

@@ -1,4 +1,5 @@
 import { EndpointNotFoundError } from '@/application/webhooks/errors/not-found.error';
+import { EndpointCachePort } from '@/application/webhooks/ports/endpoint-cache.port';
 import { VeloSignaturePort } from '@/application/webhooks/ports/velo-signature.port';
 import { WebhookForwarderPort } from '@/application/webhooks/ports/webhook-forwarder.port';
 import { IngestWebhookJobPayload } from '@/application/webhooks/types/ingest-webhook-job';
@@ -9,6 +10,7 @@ import { WebhookLogStatusType } from '@/domain/webhooks/value-objects/webhook-lo
 import { ProjectId } from '@/domain/projects/value-objects/project/project-id.vo';
 
 const FORWARD_TIMEOUT_MS = 5_000;
+const MAX_RESPONSE_BODY_LENGTH = 16_384;
 
 const toRequestPayload = (payload: unknown): Record<string, unknown> => {
   if (typeof payload === 'object' && payload !== null && !Array.isArray(payload)) {
@@ -18,17 +20,25 @@ const toRequestPayload = (payload: unknown): Record<string, unknown> => {
   return { value: payload };
 };
 
+const truncate = (value: string | undefined, maxLength: number): string | undefined => {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  return value.length > maxLength ? `${value.slice(0, maxLength)}…` : value;
+};
+
 export class ProcessWebhookJobUseCase {
   constructor(
     private readonly endpointRepo: EndpointRepositoryPort,
+    private readonly endpointCache: EndpointCachePort,
     private readonly webhookLogRepo: WebhookLogRepositoryPort,
     private readonly forwarder: WebhookForwarderPort,
     private readonly signatureService: VeloSignaturePort,
   ) {}
 
   async execute(payload: IngestWebhookJobPayload): Promise<WebhookLog> {
-    const projectId = ProjectId.create(payload.projectId);
-    const endpoint = await this.endpointRepo.findActiveByProjectId(projectId);
+    const endpoint = await this.resolveActiveEndpoint(payload.projectId);
 
     if (!endpoint) {
       throw new EndpointNotFoundError(`active endpoint for project: ${payload.projectId} not found`);
@@ -47,7 +57,7 @@ export class ProcessWebhookJobUseCase {
       const signature = this.signatureService.sign(serializedPayload, endpoint.secret);
       const result = await this.forwarder.forward({
         url: endpoint.url,
-        payload: payload.payload,
+        body: serializedPayload,
         headers: {
           'Content-Type': 'application/json',
           'X-Velo-Signature': signature,
@@ -59,7 +69,7 @@ export class ProcessWebhookJobUseCase {
 
       responseStatus = result.status;
       responseHeaders = result.headers;
-      responseBody = result.body;
+      responseBody = truncate(result.body, MAX_RESPONSE_BODY_LENGTH);
 
       if (!result.ok) {
         status = 'FAILED';
@@ -72,7 +82,7 @@ export class ProcessWebhookJobUseCase {
     const latencyMs = Math.round(performance.now() - startTime);
 
     const log = WebhookLog.create({
-      endpointId: endpoint.id.value,
+      endpointId: endpoint.id,
       projectId: payload.projectId,
       provider: payload.provider,
       providerEventId: payload.providerEventId,
@@ -89,5 +99,31 @@ export class ProcessWebhookJobUseCase {
     await this.webhookLogRepo.save(log);
 
     return log;
+  }
+
+  private async resolveActiveEndpoint(projectId: string) {
+    const cached = await this.endpointCache.getActive(projectId);
+
+    if (cached) {
+      return cached;
+    }
+
+    const project = ProjectId.create(projectId);
+    const endpoint = await this.endpointRepo.findActiveByProjectId(project);
+
+    if (!endpoint) {
+      return null;
+    }
+
+    const snapshot = {
+      id: endpoint.id.value,
+      projectId: endpoint.projectId.value,
+      url: endpoint.url,
+      secret: endpoint.secret,
+    };
+
+    await this.endpointCache.setActive(projectId, snapshot);
+
+    return snapshot;
   }
 }

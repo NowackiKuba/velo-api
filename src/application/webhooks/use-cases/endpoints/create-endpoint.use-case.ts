@@ -1,4 +1,5 @@
 import { ProjectNotFoundError } from '@/application/projects/errors/not-found.error';
+import { EndpointCachePort } from '@/application/webhooks/ports/endpoint-cache.port';
 import { Endpoint } from '@/domain/webhooks/entities/endpoint';
 import { EndpointRepositoryPort } from '@/domain/webhooks/repositories/endpoint.repository.port';
 import { ProjectRepositoryPort } from '@/domain/projects/repositories/project.repository.port';
@@ -17,6 +18,7 @@ export class CreateEndpointUseCase {
   constructor(
     private readonly endpointRepo: EndpointRepositoryPort,
     private readonly projectRepo: ProjectRepositoryPort,
+    private readonly endpointCache: EndpointCachePort,
   ) {}
 
   async execute(payload: CreateEndpointCommand): Promise<Endpoint> {
@@ -38,6 +40,7 @@ export class CreateEndpointUseCase {
     });
 
     await this.endpointRepo.save(endpoint);
+    await this.endpointCache.invalidate(projectId.value);
 
     return endpoint;
   }

@@ -1,3 +1,4 @@
+import { EndpointCachePort } from '@/application/webhooks/ports/endpoint-cache.port';
 import { Endpoint } from '@/domain/webhooks/entities/endpoint';
 import { EndpointRepositoryPort } from '@/domain/webhooks/repositories/endpoint.repository.port';
 import { FindEndpointByIdUseCase } from './find-endpoint-by-id.use-case';
@@ -16,6 +17,7 @@ export class UpdateEndpointUseCase {
   constructor(
     private readonly endpointRepo: EndpointRepositoryPort,
     private readonly findEndpointById: FindEndpointByIdUseCase,
+    private readonly endpointCache: EndpointCachePort,
   ) {}
 
   async execute(payload: UpdateEndpointCommand): Promise<Endpoint> {
@@ -32,6 +34,7 @@ export class UpdateEndpointUseCase {
     });
 
     await this.endpointRepo.save(endpoint);
+    await this.endpointCache.invalidate(payload.projectId);
 
     return endpoint;
   }

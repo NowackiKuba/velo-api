@@ -4,6 +4,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts",
+    "worker": "bun run --watch src/worker.ts",
+    "worker:prod": "bun run src/worker.ts",
     "benchmark": "RUN_BENCHMARK=true bun run src/index.ts",
     "benchmark:only": "bun run src/benchmark-script.ts",
     "docker:dev": "docker compose -f compose.dev.yml up --build",
@@ -15,7 +17,9 @@
     "db:seed:users": "bun run src/infrastructure/db/seed/seed-users.ts"
   },
   "dependencies": {
+    "@elysia/cors": "^1.4.2",
     "@elysiajs/cookie": "^0.8.0",
+    "@elysiajs/cors": "^1.4.2",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.77.1",
     "dotenv": "^17.4.2",
@@ -23,7 +27,8 @@
     "elysia": "latest",
     "jose": "^6.2.3",
     "pg": "^8.21.0",
-    "postgres": "^3.4.9"
+    "postgres": "^3.4.9",
+    "undici": "^8.3.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

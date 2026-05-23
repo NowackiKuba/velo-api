@@ -1,3 +1,4 @@
+import { ProjectId } from '@/domain/projects/value-objects/project/project-id.vo';
 import { BaseAggregateRoot } from '../../base';
 import { ResetPasswordToken } from '../value-objects/reset-password-token.vo';
 import { UserEmail } from '../value-objects/user-email.vo';
@@ -10,6 +11,7 @@ export type UserProps = {
   email: string;
   password: string;
   resetPasswordToken?: string;
+  activeProjectId?: string;
   lastResetPasswordAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
@@ -21,6 +23,7 @@ export type UserJSON = {
   username: string;
   email: string;
   password: string;
+  activeProjectId?: string;
   resetPasswordToken?: string;
   lastResetPasswordAt?: Date;
   createdAt: Date;
@@ -31,6 +34,7 @@ export type UserJSON = {
 export class User extends BaseAggregateRoot<UserId> {
   private _username: UserUsername;
   private _email: UserEmail;
+  private _activeProjectId?: ProjectId;
   private _resetPasswordToken?: ResetPasswordToken;
   private _lastResetPasswordAt?: Date;
   private _password: string;
@@ -41,6 +45,7 @@ export class User extends BaseAggregateRoot<UserId> {
     this._username = UserUsername.create(props.username);
     this._email = UserEmail.create(props.email);
     this._password = props.password;
+    this._activeProjectId = props.activeProjectId ? ProjectId.create(props.activeProjectId) : undefined;
     this._resetPasswordToken = props.resetPasswordToken ? ResetPasswordToken.create(props.resetPasswordToken) : undefined;
     this._lastResetPasswordAt = props.lastResetPasswordAt;
   }
@@ -54,6 +59,7 @@ export class User extends BaseAggregateRoot<UserId> {
     username: string;
     email: string;
     password: string;
+    activeProjectId?: string;
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date;
@@ -72,11 +78,19 @@ export class User extends BaseAggregateRoot<UserId> {
   get password(): string {
     return this._password;
   }
+  get activeProjectId(): ProjectId | undefined {
+    return this._activeProjectId;
+  }
   get resetPasswordToken(): ResetPasswordToken | undefined {
     return this._resetPasswordToken;
   }
   get lastResetPasswordAt(): Date | undefined {
     return this._lastResetPasswordAt;
+  }
+
+  updateActiveProject(id: string) {
+    this._activeProjectId = ProjectId.create(id);
+    this.touch();
   }
 
   requestPasswordReset() {
@@ -96,6 +110,7 @@ export class User extends BaseAggregateRoot<UserId> {
       username: this._username.value,
       email: this._email.value,
       password: this._password,
+      activeProjectId: this._activeProjectId?.value,
       resetPasswordToken: this._resetPasswordToken?.value,
       lastResetPasswordAt: this._lastResetPasswordAt,
       createdAt: this._createdAt,

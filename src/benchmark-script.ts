@@ -5,7 +5,7 @@ type BenchmarkOptions = {
   concurrencyLimit?: number;
 };
 
-const DEFAULT_PROJECT_ID = 'ab568afe-5a48-40d8-9c36-920f0c9c3dff';
+const DEFAULT_PROJECT_ID = 'e3775302-a0c7-41ff-9a0f-56bacf5d0a7b';
 
 const payload = {
   event: 'benchmark.test',
@@ -40,7 +40,7 @@ async function sendRequest(targetUrl: string): Promise<{ success: boolean; laten
 export async function runBenchmark(options: BenchmarkOptions = {}) {
   const baseUrl = options.baseUrl ?? 'http://localhost:3000';
   const projectId = options.projectId ?? process.env.BENCHMARK_PROJECT_ID ?? DEFAULT_PROJECT_ID;
-  const totalRequests = options.totalRequests ?? Number(process.env.BENCHMARK_REQUESTS ?? 100);
+  const totalRequests = options.totalRequests ?? Number(process.env.BENCHMARK_REQUESTS ?? 10000);
   const concurrencyLimit = options.concurrencyLimit ?? Number(process.env.BENCHMARK_CONCURRENCY ?? 50);
   const targetUrl = `${baseUrl}/api/v1/ingest/${projectId}`;
 

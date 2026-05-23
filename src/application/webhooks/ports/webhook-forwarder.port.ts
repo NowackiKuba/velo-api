@@ -1,6 +1,6 @@
 export type ForwardWebhookRequest = {
   url: string;
-  payload: unknown;
+  body: string;
   headers: Record<string, string>;
   timeoutMs: number;
 };

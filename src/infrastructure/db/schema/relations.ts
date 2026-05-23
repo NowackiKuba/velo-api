@@ -5,15 +5,21 @@ import { usersTable } from './users/users';
 import { endpointsTable } from './webhooks/endpoints';
 import { webhookLogsTable } from './webhooks/webhook-logs';
 
-export const usersRelations = relations(usersTable, ({ many }) => ({
+export const usersRelations = relations(usersTable, ({ many, one }) => ({
   projectMemberships: many(projectMembersTable, { relationName: 'projectMembership' }),
   invitedProjectMemberships: many(projectMembersTable, { relationName: 'projectInvitation' }),
+  activeProject: one(projectsTable, {
+    fields: [usersTable.activeProjectId],
+    references: [projectsTable.id],
+    relationName: 'activeProject',
+  }),
 }));
 
 export const projectsRelations = relations(projectsTable, ({ many }) => ({
   members: many(projectMembersTable),
   endpoints: many(endpointsTable),
   webhookLogs: many(webhookLogsTable),
+  activeUsers: many(usersTable, { relationName: 'activeProject' }),
 }));
 
 export const projectMembersRelations = relations(projectMembersTable, ({ one }) => ({

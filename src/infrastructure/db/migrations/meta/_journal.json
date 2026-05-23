@@ -22,6 +22,20 @@
       "when": 1779485855779,
       "tag": "0002_silent_jack_power",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1779551322235,
+      "tag": "0003_easy_praxagora",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1779567489706,
+      "tag": "0004_warm_hulk",
+      "breakpoints": true
     }
   ]
 }
