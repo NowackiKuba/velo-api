@@ -15,11 +15,29 @@ services:
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgres://postgres:secret_password@db:5432/velo_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
       # Dev-only; use a unique secret per environment in production (min 32 chars).
       - JWT_SECRET=dev-local-jwt-secret-min-32-chars-long
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --appendonly yes
+    ports:
+      - '6379:6379'
+    volumes:
+      - velo_redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # Baza danych (PostgreSQL)
   db:
@@ -43,3 +61,4 @@ services:
 
 volumes:
   velodb_pgdata:
+  velo_redis_data:

@@ -15,6 +15,13 @@
       "when": 1779469304477,
       "tag": "0001_smart_sentry",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779485855779,
+      "tag": "0002_silent_jack_power",
+      "breakpoints": true
     }
   ]
 }

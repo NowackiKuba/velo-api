@@ -2,6 +2,8 @@ import { relations } from 'drizzle-orm';
 import { projectMembersTable } from './projects/project-members';
 import { projectsTable } from './projects/projects';
 import { usersTable } from './users/users';
+import { endpointsTable } from './webhooks/endpoints';
+import { webhookLogsTable } from './webhooks/webhook-logs';
 
 export const usersRelations = relations(usersTable, ({ many }) => ({
   projectMemberships: many(projectMembersTable, { relationName: 'projectMembership' }),
@@ -10,6 +12,8 @@ export const usersRelations = relations(usersTable, ({ many }) => ({
 
 export const projectsRelations = relations(projectsTable, ({ many }) => ({
   members: many(projectMembersTable),
+  endpoints: many(endpointsTable),
+  webhookLogs: many(webhookLogsTable),
 }));
 
 export const projectMembersRelations = relations(projectMembersTable, ({ one }) => ({
@@ -26,5 +30,24 @@ export const projectMembersRelations = relations(projectMembersTable, ({ one }) 
     fields: [projectMembersTable.invitedById],
     references: [usersTable.id],
     relationName: 'projectInvitation',
+  }),
+}));
+
+export const endpointsRelations = relations(endpointsTable, ({ one, many }) => ({
+  project: one(projectsTable, {
+    fields: [endpointsTable.projectId],
+    references: [projectsTable.id],
+  }),
+  webhookLogs: many(webhookLogsTable),
+}));
+
+export const webhookLogsRelations = relations(webhookLogsTable, ({ one }) => ({
+  endpoint: one(endpointsTable, {
+    fields: [webhookLogsTable.endpointId],
+    references: [endpointsTable.id],
+  }),
+  project: one(projectsTable, {
+    fields: [webhookLogsTable.projectId],
+    references: [projectsTable.id],
   }),
 }));
